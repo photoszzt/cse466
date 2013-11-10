@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
     exit (1);
   }
   int buf_size = lseek(fd, 0L, SEEK_END) - sizeof(au_header);
+  printf("buffer size is: %d\n", buf_size);
   lseek(fd, sizeof(au_header), SEEK_SET);
   unsigned char data[buf_size];
   size_t num_bytes_read = 0;
