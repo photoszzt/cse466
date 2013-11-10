@@ -45,6 +45,11 @@ int main(int argc, char **argv) {
   uint32_t buf[6];
   size_t desired_size = 6*sizeof(uint32_t);
   size_t res = 0;
+  
+  int i;
+  int err;
+  snd_pcm_t *playback_handle;
+  int encoding_type;
   while (res != desired_size) {
     size_t temp = read(fd, buf + res, desired_size - res);
     if (temp <= 0 && errno != EAGAIN) exit(EXIT_FAILURE);
@@ -64,12 +69,15 @@ int main(int argc, char **argv) {
   }
   switch (header.encoding) {
   case AUDIO_FILE_ENCODING_MULAW:
+    encoding_type = SND_PCM_FORMAT_MU_LAW;
     printf("The file encoding is 8-bit ISDN u-law\n");
     break;
   case AUDIO_FILE_ENCODING_LINEAR_8:
+    encoding_type = SND_PCM_FORMAT_S8;
     printf("The file encoding is 8-bit linear PCM\n");
     break;
   case AUDIO_FILE_ENCODING_LINEAR_16:
+    encoding_type = SND_PCM_FORMAT_S16_BE;
     printf("The file encoding is 16-bit linear PCM\n");
     break;
   default:
@@ -78,9 +86,6 @@ int main(int argc, char **argv) {
   printf("The sample rate of the file is %d samples per second\n", header.sample_rate);
   printf("The number of channel(s) is %d\n", header.channels); 
 
-  int i;
-  int err;
-  snd_pcm_t *playback_handle;
 	
   if ((err = snd_pcm_open (&playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
     fprintf (stderr, "cannot open audio device %s (%s)\n", 
@@ -89,7 +94,7 @@ int main(int argc, char **argv) {
     exit (1);
   }
   
-  err = snd_pcm_set_params(playback_handle, header.encoding, SND_PCM_ACCESS_RW_INTERLEAVED, header.channels, header.sample_rate, 1, 500000); 
+  err = snd_pcm_set_params(playback_handle, encoding_type, SND_PCM_ACCESS_RW_INTERLEAVED, header.channels, header.sample_rate, 1, 500000); 
   
   if ((err = snd_pcm_prepare (playback_handle)) < 0) {
     fprintf (stderr, "cannot prepare audio interface for use (%s)\n",
@@ -110,15 +115,17 @@ int main(int argc, char **argv) {
   long num_frames_to_write = snd_pcm_bytes_to_frames(playback_handle, num_bytes_to_write);
    
   for (i = 0; i < 4; i++) {
+    size_t num_bytes_written = 0;
     size_t num_frames_written = 0;
     while (num_frames_written != num_frames_to_write) {
-      err = snd_pcm_writei (playback_handle, data + num_frames_written + i*num_frames_to_write, num_frames_to_write - num_frames_written);
+      err = snd_pcm_writei (playback_handle, data + num_bytes_written + i*num_bytes_to_write, num_frames_to_write - num_frames_written); 
       if (err < 0) {
 		fprintf (stderr, "write to audio interface failed (%s)\n",
 		snd_strerror (err));
 		exit (1);
       }	
       num_frames_written += err;
+      num_bytes_written += snd_pcm_frames_to_bytes(playback_handle, err);
     }
   }
   snd_pcm_close (playback_handle);
