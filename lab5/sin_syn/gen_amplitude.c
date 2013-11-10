@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "error opening file\n");
          exit(EXIT_FAILURE);
     } 
-    char *start_str = "#ifndef _AMP_TABLE_H_\n#define _AMP_TABLE_H_\n#include <stdint.h>\n\nconst uint8_t *amp_table = {";
+    char *start_str = "#ifndef _AMP_TABLE_H_\n#define _AMP_TABLE_H_\n#include <stdint.h>\n\nconst uint8_t amp_table[] = {";
     int err = write_to_file(start_str, fp);
     if (err == EXIT_FAILURE) {
         return EXIT_FAILURE;
