@@ -3,9 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
-#include <string.h>
 
-static int write_to_file (char* str, FILE* fp);
+#include "write_to_file.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -21,7 +20,7 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "error in open file\n");
 	exit(EXIT_FAILURE);
   } 
-  char * start_str = "#<include stdint.h>\n\nconst int16_t* sin_table = {";
+  char * start_str = "#include <stdint.h>\n\nconst int16_t* sin_table = {";
   int err = write_to_file(start_str, fp);
   if (err == EXIT_FAILURE) 
     return EXIT_FAILURE;
@@ -39,19 +38,5 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
   }
   fclose(fp);
-  return EXIT_SUCCESS;
-}
-
-static int write_to_file (char* str, FILE* fp) {
-  int length = strlen(str);
-  size_t written = 0;
-  while (written != length) {
-	size_t res = fwrite(str + written, sizeof(char), length - written, fp);  
-	if (ferror(fp)) {
-		perror("Error in writing the file");
-		return EXIT_FAILURE;	
-	}
-	written += res;
-  }
   return EXIT_SUCCESS;
 }

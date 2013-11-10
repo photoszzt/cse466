@@ -6,12 +6,13 @@
 #define AUDIO_FILE_ENCODING_LINEAR_16 3
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <frequency>\n", argv[0]);
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s <frequency> <table_length>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
   int frequency = atoi(argv[1]);
+  int table_length = atoi(argv[2]);
   snd_pcm_t *play_handle;
   int err;
   err = snd_pcm_set_params(playback_handle, AUDIO_FILE_ENCODING_LINEAR_16, SND_PCM_ACCESS_RW_INTERLEAVED, 1, 44100, 1, 500000); 
@@ -20,5 +21,7 @@ int main(int argc, char** argv) {
 	     snd_strerror (err));
     exit (1);
   }
+  unsigned char buffer[100000];
+  
   
 }
