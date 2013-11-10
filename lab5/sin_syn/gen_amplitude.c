@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "error opening file\n");
          exit(EXIT_FAILURE);
     } 
-    char *start_str = "#include <stdint.h>\n\nconst uint8_t *amp_table = {";
+    char *start_str = "#ifndef _AMP_TABLE_H_\n#define _AMP_TABLE_H_\n#include <stdint.h>\n\nconst uint8_t *amp_table = {";
     int err = write_to_file(start_str, fp);
     if (err == EXIT_FAILURE) {
         return EXIT_FAILURE;
@@ -63,12 +63,12 @@ int main(int argc, char **argv) {
     // Release
     for (i = 0; i < lengths[3]; i++) {
         uint8_t amp = (uint8_t) (128 - i * 128 / lengths[3]);
-        char str[6];
+        char str[7];
         snprintf(str, 4, "%d", amp);
         if (i != lengths[3] - 1) {
             strncat(str, ", ", 3);
         } else {
-            strncat(str, "};", 3);
+            strncat(str, "};\n", 4);
         }
         
         err = write_to_file(str, fp);
@@ -76,7 +76,13 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
     }
-
+    
+    char *end_str = "#endif //_AMP_TABLE_H_";
+    err = write_to_file(end_str, fp);
+    if (err == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+    
     fclose(fp);
     return EXIT_SUCCESS;
 }
