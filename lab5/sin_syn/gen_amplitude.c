@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
         if (i != lengths[3] - 1) {
             strncat(str, ", ", 3);
         } else {
-            strncat(str, "}", 2);
+            strncat(str, "};", 3);
         }
         
         err = write_to_file(str, fp);
