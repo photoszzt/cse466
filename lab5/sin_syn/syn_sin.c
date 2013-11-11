@@ -9,18 +9,19 @@
 #include <unistd.h>
 
 #include "sin_table.h"
+#include "amplitude_table.h"
 
 #define AUDIO_FILE_ENCODING_LINEAR_16 3
 #define BUFFER_SIZE 20000
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    fprintf(stderr, "Usage: %s <frequency> <table_length>\n", argv[0]);
+  if (argc != 2) {
+    fprintf(stderr, "Usage: %s <frequency>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
   int frequency = atoi(argv[1]);
-  int table_length = atoi(argv[2]);
+  int table_length = WAVE_TABLE_LENGTH;
   snd_pcm_t *play_handle;
   int err;
   if ((err = snd_pcm_open (&play_handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
@@ -41,13 +42,22 @@ int main(int argc, char** argv) {
   int16_t previous_phase = 0;
   int16_t phase_index = 0;
   int16_t increment = (table_length*frequency/44100);
+  int16_t amp_index = 0;
   
-  uint32_t time = 100;
-  while (time > 0) {
+  while (AMP_TABLE_LENGTH != amp_index) {
     for (int i = 0; i < BUFFER_SIZE; i++) {
-      buffer[i] = sin_table[phase_index];
+      int16_t phase_value = sin_table[phase_index];
+      uint8_t amp_value = amp_table[amp_index];
+      int16_t sample_value = (int16_t)((int32_t)(phase_value * amp_value) >> 8) ;
+      
+      printf("%d\n", sample_value);
+
+      buffer[i] = sample_value;
       previous_phase = phase_index;
       phase_index = (previous_phase + increment) % table_length;
+      if (AMP_TABLE_LENGTH == ++amp_index) {
+        break;
+      }
     }
     long num_frames_to_write = snd_pcm_bytes_to_frames(play_handle, BUFFER_SIZE);
     size_t num_frames_written = 0;
@@ -61,7 +71,6 @@ int main(int argc, char** argv) {
       num_frames_written += err;
       num_bytes_written += snd_pcm_frames_to_bytes(play_handle, err);
     }
-    time--;
   }
   snd_pcm_close(play_handle);
   exit(EXIT_SUCCESS);
