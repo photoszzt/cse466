@@ -48,7 +48,8 @@ int main(int argc, char** argv) {
     for (int i = 0; i < BUFFER_SIZE; i++) {
       int16_t phase_value = sin_table[phase_index];
       uint8_t amp_value = amp_table[amp_index];
-      int16_t sample_value = (int16_t)((int32_t)(phase_value * amp_value) >> 8) ;
+      int16_t sample_value = phase_value //(int16_t)((int32_t)(phase_value * amp_value) >> 8) ;
+      
       
       printf("%d\n", sample_value);
 
