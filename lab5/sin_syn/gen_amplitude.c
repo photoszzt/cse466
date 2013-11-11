@@ -21,12 +21,18 @@ int main(int argc, char **argv) {
         fprintf(stderr, "error opening file\n");
          exit(EXIT_FAILURE);
     } 
-    char *start_str = "#ifndef _AMP_TABLE_H_\n#define _AMP_TABLE_H_\n#include <stdint.h>\n\nconst uint8_t amp_table[] = {";
+    int i;
+    int length = 0;
+    for (i = 0; i < 4; i++) {
+      length += lengths[i];
+    }
+    char start_str[150];
+    snprintf(start_str, 150, "#ifndef _AMP_TABLE_H_\n#define _AMP_TABLE_H_\n#include <stdint.h>\n#define AMP_TABLE_LENGTH %d\n\nconst uint8_t amp_table[] = {", length);
     int err = write_to_file(start_str, fp);
     if (err == EXIT_FAILURE) {
         return EXIT_FAILURE;
     }
-    int i;
+    
     // Attack
     for (i = 0; i < lengths[0]; i++) {
         uint8_t amp = (uint8_t) (i * 255 / lengths[0]);
