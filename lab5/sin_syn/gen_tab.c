@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 	exit(EXIT_FAILURE);
   } 
   char start_str[150]; 
-  snprintf(start_str, 150, "#ifndef _SIN_TABLE_H_\n#define _SIN_TABLE_H_\n#include <stdint.h>\n#define WAVE_TABLE_LEN %d\n\nconst int16_t sin_table[] = {", table_length);
+  snprintf(start_str, 150, "#ifndef _SIN_TABLE_H_\n#define _SIN_TABLE_H_\n#include <stdint.h>\n#define WAVE_TABLE_LENGTH %d\n\nconst int16_t sin_table[] = {", table_length);
   int err = write_to_file(start_str, fp);
   if (err == EXIT_FAILURE) 
     return EXIT_FAILURE;
