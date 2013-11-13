@@ -8,6 +8,8 @@
 
 static void extract_ints (int *ints, char **args, int length);
 
+// Lab 5 part 3
+// Joseph Godlewski, Zhiting Zhu
 int main(int argc, char **argv) {
     if (argc != 5) {
         fprintf(stderr, "Usage: %s <attack length> <decay length> \

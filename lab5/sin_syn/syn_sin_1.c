@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 	     snd_strerror (err));
     exit (1);
   }
-  err = snd_pcm_set_params(play_handle, SND_PCM_FORMAT_S16_BE, SND_PCM_ACCESS_RW_INTERLEAVED, 1, 44100, 1, 500000); 
+  err = snd_pcm_set_params(play_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 1, 44100, 1, 500000); 
   if ((err = snd_pcm_prepare (play_handle)) < 0) {
     fprintf (stderr, "cannot prepare audio interface for use (%s)\n",
 	     snd_strerror (err));
@@ -44,21 +44,36 @@ int main(int argc, char** argv) {
   
   int16_t previous_phase = 0;
   uint32_t phase_index = 0;
-  uint16_t increment = 1;//(table_length*frequency/44100.0);
-  while (1) {
-    uint16_t i = 0;
-    for (i = 0; i < BUFFER_SIZE; i++) {
+  uint16_t increment = table_length*frequency/44100.0;
+  uint32_t amp_index = 0;
+  int set_amp = 1;
+  uint8_t amp_value = 1;
+  while (AMP_TABLE_LENGTH != amp_index) {
+    uint16_t len = 0; 
+    for (int i = 0; i < BUFFER_SIZE; i++) {
       int16_t phase_value = sin_table[(int)phase_index];
-      
-      int16_t sample_value = phase_value;
+      if (set_amp) {
+	amp_value = amp_table[amp_index];
+	set_amp = 0;
+	amp_index++;
+      }
+      int16_t sample_value = (int16_t)((int32_t)(phase_value * amp_value) >> 8);
       buffer[i] = sample_value;
       previous_phase = phase_index;
-      phase_index = (previous_phase + increment) % table_length;
+      phase_index = previous_phase + increment;
+      if (phase_index > table_length) {
+	phase_index = 0;
+	set_amp = 1;
+      }
+      len ++;
+      if (AMP_TABLE_LENGTH == amp_index) {
+	break;
+      }
     }
-    long num_frames_to_write = snd_pcm_bytes_to_frames(play_handle, i);
+    long num_frames_to_write = snd_pcm_bytes_to_frames(play_handle, len);
     size_t num_frames_written = 0;
     size_t num_bytes_written = 0;
-    while (num_bytes_written != i) {
+    while (num_frames_written != num_frames_to_write) {
       err = snd_pcm_writei(play_handle, buffer + num_bytes_written, num_frames_to_write - num_frames_written);
       if (err < 0) {
 	fprintf(stderr, "write to audio interface failed (%s)\n", snd_strerror(err));

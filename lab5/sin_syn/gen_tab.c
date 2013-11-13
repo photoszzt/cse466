@@ -8,6 +8,8 @@
 
 #define M_PI 3.14159265358979323846
 
+// Lab 5 part 3
+// Joseph Godlewski, Zhiting Zhu
 int main(int argc, char** argv) {
   if (argc != 2) {
     fprintf(stderr, "Usage: %s <table length>\n", argv[0]);
@@ -27,7 +29,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   int i = 0;
   for (i = 0; i < table_length; i++) {
-    int16_t temp = (int16_t) (sin((double)i * 2 * M_PI / table_length) * 32767);
+    int16_t temp = (int16_t) (sin(((double)i * 2.0 * M_PI) / ((double)table_length)) * 32767);
     char str[30];
     snprintf(str, 7, "%d", temp);
     if (i != table_length - 1)

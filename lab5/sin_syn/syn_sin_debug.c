@@ -28,26 +28,19 @@ int main(int argc, char** argv) {
   
   int16_t previous_phase = 0;
   uint16_t phase_index = 0;
-  uint16_t increment = (table_length*frequency/44100);
+  uint16_t increment = 1;
   uint32_t amp_index = 0;
   
-  while (AMP_TABLE_LENGTH != amp_index) {
-    uint16_t len = 0; 
-    for (int i = 0; i < BUFFER_SIZE; i++) {
-      int16_t phase_value = sin_table[phase_index];
-      uint8_t amp_value = amp_table[amp_index];
-      int16_t sample_value = (int16_t)((int32_t)(phase_value * amp_value) >> 8);
-      
-      
-      buffer[i] = sample_value;
-      printf("%d\t%d\n", amp_index, sample_value);
-      previous_phase = phase_index;
-      phase_index = (previous_phase + increment) % table_length;
-      len ++;
-      if (AMP_TABLE_LENGTH == ++amp_index) {
-        break;
-      }
-    } 
-  }
+  uint16_t i = 0; 
+  for (i = 0; i < BUFFER_SIZE; i++) {
+    int16_t phase_value = sin_table[(int)phase_index];
+     
+    int16_t sample_value = phase_value;
+    printf("%d\t%d\n", i, sample_value);
+    buffer[i] = sample_value;
+    previous_phase = phase_index;
+    phase_index = (previous_phase + increment) % table_length;
+  } 
+  
   exit(EXIT_SUCCESS);
 }

@@ -1,3 +1,6 @@
+# Lab 5 part 3
+# Joseph Godlewski, Zhiting Zhu
+
 CROSS=arm-linux-
 
 all: syn_sin

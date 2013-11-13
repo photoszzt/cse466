@@ -1,3 +1,6 @@
+// Lab 5 part 3
+// Joseph Godlewski, Zhiting Zhu
+
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>

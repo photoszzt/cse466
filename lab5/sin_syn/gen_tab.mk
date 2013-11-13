@@ -1,3 +1,6 @@
+# Lab 5 part 3
+# Joseph Godlewski, Zhiting Zhu
+
 CC=gcc
 CCFLAGS=-Wall -std-c99
 
