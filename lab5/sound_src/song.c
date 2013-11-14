@@ -13,6 +13,8 @@
 #include "amplitude_table.h"
 
 #define BUFFER_SIZE 20000
+#define NOTE_BUFFER 20
+
 
 static snd_pcm_t *playback_handle;
 
@@ -24,12 +26,23 @@ int main(int argc, char **argv) {
   }
 
   char *filename = argv[1];
-  
   set_up_sound(&playback_handle, SND_PCM_FORMAT_S16_BE, 1, 44100);
-
+  FILE *fp = fopen(filename, "r");
+  uint16_t frequencies[NOTE_BUFFER];
+  uint16_t durations[NOTE_BUFFER];
+  int continuing = 1;
+  while(continuing) {
+    continuing = get_frequencies_and_durations(fp, frequencies, durations, NOTE_BUFFER);
+    for(int i = 0; i < NOTE_BUFFER; i++) {
+      play_note(frequencies[i], durations[i]);
+    }
+  }
 }
 
-void play_note(int note_freq, int duration) {
+/*
+ * plays the given frequency for the given amount of time
+ */
+void play_note(uint16_t note_freq, uint16_t duration) {
   unsigned char buffer[BUFFER_SIZE];
 
   uint32_t sin_table_index = 0;
