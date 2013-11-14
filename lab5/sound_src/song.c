@@ -15,8 +15,10 @@
 #define BUFFER_SIZE 20000
 #define NOTE_BUFFER 20
 
-
 static snd_pcm_t *playback_handle;
+
+int get_frequencies_and_durations(FILE *, uint16_t *, uint16_t *, int); 
+void play_note(uint16_t, uint16_t); 
 
 int main(int argc, char **argv) {
 
@@ -38,6 +40,15 @@ int main(int argc, char **argv) {
     }
   }
 }
+
+int get_frequencies_and_durations(FILE *fp, uint16_t *frequencies, uint16_t *durations, int size) {
+  for(int i = 0; i < size; i++) {
+    frequencies[i] = (uint16_t) (131 * i * 1.056);
+    durations[i] = 200;
+  }
+  return 0;
+}
+
 
 /*
  * plays the given frequency for the given amount of time
