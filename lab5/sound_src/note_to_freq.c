@@ -1,11 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "note_table.h"
 
+int get_frequencies_and_durations(FILE* fp, uint16_t* frequencies, uint16_t* durations, int size);
+static void Trim(char* temp, int begin, int end, int* newbegin, int* newend);
+static char ** Split(char spliter, char * spliting, int * size);
+
 int main() {
-  
+  FILE* fp = fopen("notes.txt", "r");
+  uint16_t frequencies[10];
+  uint16_t durations[10];
+  int continuing = 1;
+  while(continuing) {
+    continuing = get_frequencies_and_durations(fp, frequencies, durations, 10);
+  }
+  fclose(fp);
+  return 0;
 }
 
 /*
@@ -14,14 +27,14 @@ int main() {
 int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* durations, int size) {
   char* line = NULL;
   size_t len = 0;
-  ssize_t read;
+  size_t read;
   int count = 0;
-  int finish = 0;
-  while ((read = getline(&line, &len, fp)) != -1 && count < size) {
-    int numcommand = 0;
-    line[len - 1] = '\0';
-    char** notes_durations = Split(" ", line, &numcommand);
-    if (numcommand != 2) {
+  while (count < size && (read = getline(&line, &len, fp)) != -1) {
+    int numnotes = 0;
+    if (line[len - 1] == '\n')
+      line[len - 1] = '\0';
+    char** notes_durations = Split(' ', line, &numnotes);
+    if (numnotes != 2) {
       fprintf(stderr, "Input error");
       exit(EXIT_FAILURE);
     }
@@ -32,7 +45,7 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
     int length = strlen(note);
     strncpy(purenote, note, length - 1);
     printf("%s\t%s\n", note, purenote);
-    uint8_t scale = atoi(note[length - 1]) - 3;
+    uint8_t scale = atoi(note + length - 1) - 3;
     printf("%d\n", scale);
     int base = 0;
     if (strcmp(purenote, "C") == 0)
@@ -74,8 +87,17 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
       exit(EXIT_FAILURE);
     }
     frequencies[count] = base + scale*11;
-    coount++;
+    for (int i = 0; i < numnotes; i++) {
+      free(notes_durations[i]);
+    }
+    free(notes_durations);
+    count++;
   }
+  if (line)
+    free(line);
+  if (read == -1)
+    return 0;
+  else return count;
 }
 
 static void Trim(char* temp, int begin, int end, int* newbegin, int* newend) {
