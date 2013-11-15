@@ -14,9 +14,18 @@ int main() {
   uint16_t frequencies[10];
   uint16_t durations[10];
   int continuing = 1;
+  int i = 0;
+  memset(frequencies, 0, 10*sizeof(uint16_t));
+  memset(durations, 0, 10*sizeof(uint16_t));
   while(continuing) {
     continuing = get_frequencies_and_durations(fp, frequencies, durations, 10);
+    
+    for (i = 0; i < 10; i++) {
+      printf("%d ", frequencies[i]);
+    }
+    printf("\n");
   }
+  
   fclose(fp);
   return 0;
 }
@@ -31,8 +40,10 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
   int count = 0;
   while (count < size && (read = getline(&line, &len, fp)) != -1) {
     int numnotes = 0;
-    if (line[len - 1] == '\n')
-      line[len - 1] = '\0';
+    int line_length = strlen(line);
+    if (line[line_length - 1] == '\n')
+      line[line_length - 1] = '\0';
+    printf("line is: %s\n", line);
     char** notes_durations = Split(' ', line, &numnotes);
     if (numnotes != 2) {
       fprintf(stderr, "Input error");
@@ -83,7 +94,7 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
     else if (strcmp(purenote, "B") == 0)
       base = 11;
     else {
-      fprintf(stderr, "Unrecognized note found");
+      fprintf(stderr, "Unrecognized note found\n");
       exit(EXIT_FAILURE);
     }
     frequencies[count] = base + scale*11;
