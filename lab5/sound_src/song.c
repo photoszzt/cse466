@@ -11,6 +11,7 @@
 #include "audio_interface.h"
 #include "sin_table.h"
 #include "amplitude_table.h"
+#include "note_to_freq.h"
 
 #define BUFFER_SIZE 20000
 #define NOTE_BUFFER 20
@@ -33,14 +34,21 @@ int main(int argc, char **argv) {
   uint16_t frequencies[NOTE_BUFFER];
   uint16_t durations[NOTE_BUFFER];
   int continuing = 1;
-  while(continuing) {
+  while(continuing > 0) {
     continuing = get_frequencies_and_durations(fp, frequencies, durations, NOTE_BUFFER);
-    for(int i = 0; i < NOTE_BUFFER; i++) {
+    int size = 0;
+    if (continuing < 0) {
+      size = -continuing;
+    } else {
+      size = continuing;
+    }
+    for(int i = 0; i < size; i++) {
       play_note(frequencies[i], durations[i]);
     }
   }
 }
 
+/*
 int get_frequencies_and_durations(FILE *fp, uint16_t *frequencies, uint16_t *durations, int size) {
   for(int i = 0; i < size; i++) {
     frequencies[i] = (uint16_t) (131 * i * 1.056);
@@ -48,7 +56,7 @@ int get_frequencies_and_durations(FILE *fp, uint16_t *frequencies, uint16_t *dur
   }
   return 0;
 }
-
+*/
 
 /*
  * plays the given frequency for the given amount of time

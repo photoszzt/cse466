@@ -5,11 +5,11 @@
 
 #include "note_table.h"
 
-int get_frequencies_and_durations(FILE* fp, uint16_t* frequencies, uint16_t* durations, int size);
 static void Trim(char* temp, int begin, int end, int* newbegin, int* newend);
 static char ** Split(char spliter, char * spliting, int * size);
 
-int main() {
+// Testing program
+/*int main() {
   FILE* fp = fopen("notes.txt", "r");
   uint16_t frequencies[10];
   uint16_t durations[10];
@@ -28,10 +28,12 @@ int main() {
   
   fclose(fp);
   return 0;
-}
+  }*/
 
 /*
- * return 0 if reaches the end of the file
+ * Read the song file and transform return the duration of each note and the index to the note table.
+ * return -amount of items read if reaches the end of the file
+ * otherwise return the amount of items read
  */
 int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* durations, int size) {
   char* line = NULL;
@@ -43,7 +45,6 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
     int line_length = strlen(line);
     if (line[line_length - 1] == '\n')
       line[line_length - 1] = '\0';
-    printf("line is: %s\n", line);
     char** notes_durations = Split(' ', line, &numnotes);
     if (numnotes != 2) {
       fprintf(stderr, "Input error");
@@ -55,9 +56,7 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
     memset(purenote, 0x0, 3);
     int length = strlen(note);
     strncpy(purenote, note, length - 1);
-    printf("%s\t%s\n", note, purenote);
     uint8_t scale = atoi(note + length - 1) - 3;
-    printf("%d\n", scale);
     int base = 0;
     if (strcmp(purenote, "C") == 0)
       base = 0;
@@ -97,17 +96,19 @@ int get_frequencies_and_durations (FILE* fp, uint16_t* frequencies, uint16_t* du
       fprintf(stderr, "Unrecognized note found\n");
       exit(EXIT_FAILURE);
     }
-    frequencies[count] = base + scale*11;
+    frequencies[count] = base + scale*12;
     for (int i = 0; i < numnotes; i++) {
       free(notes_durations[i]);
     }
     free(notes_durations);
+    free(line);
+    line = NULL;
     count++;
   }
   if (line)
     free(line);
   if (read == -1)
-    return 0;
+    return -count;
   else return count;
 }
 
@@ -129,7 +130,7 @@ static char ** Split(char spliter, char * spliting, int * size) {
       numprog++;
     }
   }
-  char** progs = (char**) malloc((numprog+1)*sizeof(char*));
+  char** progs = (char**) calloc((numprog+1), sizeof(char*));
   int start = 0;
   int progcount = 0;
   for (i = 0; i < length; i++) {
@@ -137,7 +138,7 @@ static char ** Split(char spliter, char * spliting, int * size) {
       char temp[i-start];
       temp[0]=0x0;
       memset(temp, 0x0, i-start);
-      char *to = (char*) malloc((i-start)*sizeof(char));
+      char *to = (char*) calloc((i-start), sizeof(char));
       strncpy(temp, spliting+start, i-start);
       int begin, end;
       Trim(temp, 0, i-start-1, &begin, &end);
@@ -148,7 +149,7 @@ static char ** Split(char spliter, char * spliting, int * size) {
     }
   }
   char temp[length-start];
-  char *to = (char*) malloc((length-start)*sizeof(char));
+  char *to = (char*) calloc((length-start), sizeof(char));
   strncpy(temp, spliting+start, length-start);
   int begin, end;
   Trim(temp, 0, length-start-1, &begin, &end);
