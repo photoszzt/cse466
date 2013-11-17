@@ -1,3 +1,7 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
+// Lab 5 part 3
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,8 +12,6 @@
 
 #define M_PI 3.14159265358979323846
 
-// Lab 5 part 3
-// Joseph Godlewski, Zhiting Zhu
 int main(int argc, char** argv) {
   if (argc != 2) {
     fprintf(stderr, "Usage: %s <table length>\n", argv[0]);

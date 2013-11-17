@@ -1,3 +1,7 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
+// Lab 5 part 2, 3, 4
+
 #ifndef _AUDIO_INTERFACE_H_
 #define _AUDIO_INTERFACE_H_
 

@@ -1,5 +1,6 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
 // Lab 5 part 3
-// Joseph Godlewski, Zhiting Zhu
 
 #include <stdio.h> 
 #include <stdlib.h>

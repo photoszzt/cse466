@@ -1,3 +1,7 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
+// Lab 5 part 4
+
 #include <stdlib.h>
 #include <alsa/asoundlib.h>
 #include <arpa/inet.h>
