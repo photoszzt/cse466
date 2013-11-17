@@ -5,6 +5,7 @@ CCFLAGS="-Wall -std=c99"
 all: song
 
 song: audio_interface.o
+	make -f gen_tab.mk
 	$(CROSS)gcc $(CCFLAGS) -L $(ALSA)lib/ -I  $(ALSA)include/ -lasound -o song song.c audio_interface.o
 
 audio_interface.o:
@@ -13,6 +14,6 @@ audio_interface.o:
 
 
 clean:
-	@rm -vf song *.o *~
+	@rm -vf song synth *.o *~
 
 

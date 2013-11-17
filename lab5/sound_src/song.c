@@ -21,31 +21,24 @@
 
 static snd_pcm_t *playback_handle;
 
-int get_frequencies_and_durations(FILE *, uint16_t *, uint16_t *, int); 
+int get_frequencies_and_durations(uint16_t *, uint16_t *, int); 
 void play_note(uint16_t, uint16_t); 
 
 int main(int argc, char **argv) {
 
-  if(argc != 2) {
-    fprintf(stderr, "Usage: %s <song_file>\n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
-
-  char *filename = argv[1];
   set_up_sound(&playback_handle, SND_PCM_FORMAT_S16_BE, 1, 44100);
-  FILE *fp = fopen(filename, "r");
   uint16_t frequencies[NOTE_BUFFER];
   uint16_t durations[NOTE_BUFFER];
   int continuing = 1;
   while(continuing) {
-    continuing = get_frequencies_and_durations(fp, frequencies, durations, NOTE_BUFFER);
+    continuing = get_frequencies_and_durations(frequencies, durations, NOTE_BUFFER);
     for(int i = 0; i < NOTE_BUFFER; i++) {
       play_note(frequencies[i], durations[i]);
     }
   }
 }
 
-int get_frequencies_and_durations(FILE *fp, uint16_t *frequencies, uint16_t *durations, int size) {
+int get_frequencies_and_durations(uint16_t *frequencies, uint16_t *durations, int size) {
   for(int i = 0; i < size; i++) {
     frequencies[i] = (uint16_t) (131 * i * 1.056);
     durations[i] = 200;
