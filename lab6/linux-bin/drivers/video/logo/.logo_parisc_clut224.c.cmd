@@ -1,0 +1,1 @@
+cmd_drivers/video/logo/logo_parisc_clut224.c := scripts/pnmtologo -t clut224 -n logo_parisc_clut224 -o drivers/video/logo/logo_parisc_clut224.c /homes/iws/zzt0215/cse_466/labs/lab6/linux-2.6.32.2/drivers/video/logo/logo_parisc_clut224.ppm

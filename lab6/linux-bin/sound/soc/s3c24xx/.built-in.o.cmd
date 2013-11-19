@@ -1,0 +1,1 @@
+cmd_sound/soc/s3c24xx/built-in.o :=  arm-linux-ld -EL    -r -o sound/soc/s3c24xx/built-in.o sound/soc/s3c24xx/snd-soc-s3c24xx.o sound/soc/s3c24xx/snd-soc-s3c24xx-i2s.o sound/soc/s3c24xx/snd-soc-s3c24xx-uda134x.o 

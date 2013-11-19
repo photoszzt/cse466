@@ -1,0 +1,1 @@
+cmd_drivers/video/logo/logo_superh_mono.c := scripts/pnmtologo -t mono -n logo_superh_mono -o drivers/video/logo/logo_superh_mono.c /homes/iws/zzt0215/cse_466/labs/lab6/linux-2.6.32.2/drivers/video/logo/logo_superh_mono.pbm

@@ -1,0 +1,1 @@
+cmd_drivers/media/video/built-in.o :=  arm-linux-ld -EL    -r -o drivers/media/video/built-in.o drivers/media/video/videodev.o drivers/media/video/v4l2-int-device.o drivers/media/video/v4l2-common.o drivers/media/video/v4l1-compat.o drivers/media/video/gspca/built-in.o drivers/media/video/uvc/built-in.o drivers/media/video/s3c2440camera.o 

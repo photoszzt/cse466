@@ -1,0 +1,1 @@
+cmd_drivers/net/wireless/built-in.o :=  arm-linux-ld -EL    -r -o drivers/net/wireless/built-in.o drivers/net/wireless/at76c50x-usb.o drivers/net/wireless/zd1211rw/built-in.o drivers/net/wireless/rtl818x/built-in.o drivers/net/wireless/zd1201.o drivers/net/wireless/rt2x00/built-in.o drivers/net/wireless/ath/built-in.o 
