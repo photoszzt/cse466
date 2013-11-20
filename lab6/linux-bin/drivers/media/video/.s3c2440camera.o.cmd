@@ -1,1 +1,0 @@
-cmd_drivers/media/video/s3c2440camera.o := arm-linux-ld -EL    -r -o drivers/media/video/s3c2440camera.o drivers/media/video/s3c2440_ov9650.o drivers/media/video/sccb.o drivers/media/video/s3c2440camif.o 

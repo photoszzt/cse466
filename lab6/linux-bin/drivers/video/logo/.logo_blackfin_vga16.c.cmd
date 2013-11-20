@@ -1,1 +1,0 @@
-cmd_drivers/video/logo/logo_blackfin_vga16.c := scripts/pnmtologo -t vga16 -n logo_blackfin_vga16 -o drivers/video/logo/logo_blackfin_vga16.c /homes/iws/zzt0215/cse_466/labs/lab6/linux-2.6.32.2/drivers/video/logo/logo_blackfin_vga16.ppm

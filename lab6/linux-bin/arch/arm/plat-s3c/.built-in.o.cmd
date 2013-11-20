@@ -1,1 +1,0 @@
-cmd_arch/arm/plat-s3c/built-in.o :=  arm-linux-ld -EL    -r -o arch/arm/plat-s3c/built-in.o arch/arm/plat-s3c/init.o arch/arm/plat-s3c/time.o arch/arm/plat-s3c/clock.o arch/arm/plat-s3c/pwm-clock.o arch/arm/plat-s3c/gpio.o arch/arm/plat-s3c/gpio-config.o arch/arm/plat-s3c/dma.o arch/arm/plat-s3c/dev-i2c0.o arch/arm/plat-s3c/dev-usb.o arch/arm/plat-s3c/dev-nand.o 
