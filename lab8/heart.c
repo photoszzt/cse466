@@ -81,19 +81,21 @@ int main(int argc, char** argv) {
 }
 
 void write_fb(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, char *fbp) {
-
-  int x = 0; int y = 0;       // Where we are going to put the pixel
-
+  int x, y;
   // Figure out where in memory to put the pixel
   for (y = 0; y < vinfo.yres; y++) {
     for (x = 0; x < vinfo.xres; x++) {
 
       long int location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
         (y+vinfo.yoffset) * finfo.line_length;
-
       int b = 31;
-      int g = 31;     // A little green
-      int r = 31;    // A lot of red
+      int g = 31;
+      int r = 31;
+      if(x % 4 == 0 || y % 4 == 0) {
+        b = 0;
+        g = 0;
+        r = 0;
+      }
       unsigned short int t = r<<11 | g << 5 | b;
       *((unsigned short int*)(fbp + location)) = t;
 
