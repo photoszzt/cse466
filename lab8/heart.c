@@ -11,6 +11,7 @@
 
 // Note FB is 240x320px at 16bpp
 
+void stabilize(int); 
 void monitor_heart_rate(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *, int);
 int get_value(int);
 void write_grid(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *);
@@ -64,6 +65,20 @@ int main(int argc, char** argv) {
     exit(4);
   }
   // stabilize
+  // stabilize(fd);
+  printf("stabilized");
+
+  // signal stabilized, can execute
+  monitor_heart_rate(vinfo, finfo, fbp, fd);
+
+  // cleanup
+  close(fd);
+  munmap(fbp, screensize);
+  close(fbfd);
+  return 0;
+}
+
+void stabilize(int fd) {
   int period = -1;
   int num_correct = 0;
   int max = 700;
@@ -103,23 +118,14 @@ int main(int argc, char** argv) {
         avg = value;
       } else {
         avg = (avg + value)/2;
-        printf("Avg = %d", avg);
+        printf("Avg = %d\n", avg);
       }
     }
     prev = value;
     time++;
   }
 
-  printf("stabilized");
 
-  // signal stabilized, can execute
-  //monitor_heart_rate(vinfo, finfo, fbp, fd);
-
-  // cleanup
-  close(fd);
-  munmap(fbp, screensize);
-  close(fbfd);
-  return 0;
 }
 
 void monitor_heart_rate(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, 
@@ -159,7 +165,7 @@ int get_value(int fd) {
   if (len > 0) {
     buffer[len] = '\0';
     sscanf(buffer, "%d", &value);
-    printf("ADC Value: %d\n", value);
+    // printf("ADC Value: %d\n", value);
   } else {
     perror("read ADC device:");
     return 1;
