@@ -1,18 +1,19 @@
+#include <signal.h>
 #include <sys/types.h>  
 #include <sys/stat.h>  
 #include <fcntl.h>  
 #include <stdio.h>  
-#include <poll.h>  
-#include <signal.h>  
+#include <poll.h>    
 #include <sys/types.h>  
 #include <unistd.h>  
 #include <fcntl.h>
+#include <string.h>
 
-int in;
+volatile int in;
 
-int handle_input(int);
+void handle_input(int);
 
-int handle_input(int signum) {
+void handle_input(int signum) {
   char buf[10];
   memset(buf, 0x0, 10);
   size_t n = read(in, buf, 10); 
@@ -22,9 +23,19 @@ int handle_input(int signum) {
 }
 
 int main() {
-  in = fcntl(STDIN_FILENO, F_SETFL, O_ASYNC);
+  struct sigaction saio;
+  memset(&saio, 0x0, sizeof(struct sigaction));
+  saio.sa_handler = handle_input;
+  sigaction(SIGIO, &saio, NULL);
+  in = fcntl(STDIN_FILENO, F_GETFL);
+  if (in < 0) {
+    printf("flag retrival error");
+  }
+  in = fcntl(in, F_SETFL, O_ASYNC);
   in = fcntl(in, F_SETOWN, getpid());
-  signal(SIGIO, handle_input);
+  while(1) {
+    usleep(1000);
+  }
   close(in);
   return 0;
 }
