@@ -1,9 +1,9 @@
 CFLAGS= -Wall -O2
 CC=arm-linux-gcc
 
-heart: heart.o
-	$(CC) $(CFLAGS) -o heart heart.o
+heart: heart.o io_handler.o
+	$(CC) $(CFLAGS) -o heart heart.o io_handler.o
 
 clean: 
-	rm -f heart heart.o
+	rm -f heart *.o
 
