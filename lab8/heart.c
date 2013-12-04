@@ -7,10 +7,7 @@
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-
-#define NZEROS 4
-#define NPOLES 4
-#define GAIN   1.209590303e+01
+#include "filter.h"
 
 // Note FB is 240x320px at 16bpp
 
@@ -19,9 +16,6 @@ void monitor_heart_rate(struct fb_var_screeninfo, struct fb_fix_screeninfo, char
 int get_value(int);
 void write_grid(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *);
 void write_line(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *, int, int, int);
-int filter(int);
-
-float xv[NZEROS+1], yv[NPOLES+1];
 
 int main(int argc, char** argv) {
   
@@ -136,6 +130,9 @@ void stabilize(int fd) {
 
 void monitor_heart_rate(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, 
                         char *fbp, int fd) {
+  filter_t f;
+  memset(&f, 0x0, sizeof(filter_t));
+  filter_init(&f);
   int prev = vinfo.xres/2;
   int i = 0;
   int j = 0;
@@ -144,12 +141,8 @@ void monitor_heart_rate(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo
   for(j = 0;j < 7500; j++) {
     // Get the adc value
     int value = get_value(fd);
-    if (j < 4) {
-      xv[j+1] = value;
-      yv[j+1] = value;
-    } else {
-      value = filter(value);
-    }
+    filter_put(&f, value);
+    value = filter_get(&f);
     values[j] = value;
     // write out samples every 0.008 sec (every 2 cycles)
     if(j % 2 == 1) {
@@ -240,16 +233,6 @@ void write_line(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo,
     unsigned short int t = r<<11 | g << 5 | b;
     *((unsigned short int*)(fbp + location)) = t;
   }
-}
-
-int filter(int input) {
-  xv[0] = xv[1]; xv[1] = xv[2]; xv[2] = xv[3]; xv[3] = xv[4]; 
-  xv[4] = input / GAIN;
-  yv[0] = yv[1]; yv[1] = yv[2]; yv[2] = yv[3]; yv[3] = yv[4]; 
-  yv[4] =   (xv[0] + xv[4]) + 4 * (xv[1] + xv[3]) + 6 * xv[2]
-    + ( -0.0181370770 * yv[0]) + (  0.0329072181 * yv[1])
-    + ( -0.4937426526 * yv[2]) + (  0.1562105841 * yv[3]);
-  return (int) yv[4];
 }
 
 
