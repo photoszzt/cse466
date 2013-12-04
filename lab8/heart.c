@@ -19,10 +19,10 @@ void monitor_heart_rate(int);
 int get_value(int);
 
 int main(int argc, char** argv) {
-  
+
   // remap stdin
   setup();
-  
+
   // open the adc
   int fd = open("/dev/adc", 0);
   if (fd < 0) {
@@ -32,18 +32,20 @@ int main(int argc, char** argv) {
   // initialize the frame buffer
   init_fb();
   write_grid();
-  // wait for the user to start
-  while(!proceed()) {
-    usleep(4000);
-  }
-  // stabilize
-  write_grid();
-  stabilize();
+  while(1) {
+    // wait for the user to start
+    while(!proceed()) {
+      usleep(4000);
+    }
+    // stabilize
+    write_grid();
+    stabilize();
 
-  // signal stabilized, can execute
-  monitor_heart_rate(fd);
-  
-  enable_terminal();
+    // signal stabilized, can execute
+    monitor_heart_rate(fd);
+
+    enable_terminal();
+  }
   // cleanup
   close(fd);
   cleanup_fb();
@@ -69,13 +71,13 @@ void monitor_heart_rate(int fd) {
     value = filter_get(&f);
     values[j] = value;
     // write out samples every 0.008 sec (every 2 cycles)
-    if(j % 2 == 1) {
-      value = (value + values[j - 1]) / 2; // get avg of this and previous
+    if(j % 4 == 3) {
+      value = (value + values[j - 1] + values[j - 2] + values[j - 3]) / 4; // get avg of this and previous
       i = write_line(value, prev, i);
       prev = value;
     }
     j++;
-    usleep(4000);
+    usleep(2000);
   }
 
 }
