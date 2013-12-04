@@ -9,6 +9,7 @@
 #include "io_handler.h"
 
 int state = 0;
+struct termios old_term, new_term;
 
 void setup() {
   int flag = 0;
@@ -34,13 +35,7 @@ void setup() {
   memset(&saio, 0x0, sizeof(struct sigaction));
   saio.sa_handler = io_sig;
   sigaction(SIGIO, &saio, NULL);
-
-  // Disable keys being echoed to the screen
-  struct termios old_term, new_term;
-  tcgetattr(STDIN_FILENO, &old_term);
-  new_term = old_term;
-  new_term.c_lflag &= ~(ICANON | ECHO); 
-  tcsetattr( STDIN_FILENO, TCSANOW, &new_term);
+  disable_terminal();
 }
 
 // The I/O handler
@@ -64,4 +59,16 @@ void io_sig(int signo) {
 // Whether the program should continue.
 int proceed() {
   return state;
+}
+
+void disable_terminal() {
+  // Disable keys being echoed to the screen
+  tcgetattr(STDIN_FILENO, &old_term);
+  new_term = old_term;
+  new_term.c_lflag &= ~(ICANON | ECHO); 
+  tcsetattr(STDIN_FILENO, TCSANOW, &new_term);
+}
+
+void enable_terminal() {
+  tcsetattr(STDIN_FILENO, TCSANOW, &old_term);
 }
