@@ -10,7 +10,7 @@
 
 #define NZEROS 4
 #define NPOLES 4
-#define GAIN   5.458037903e+03
+#define GAIN   1.209590303e+01
 
 // Note FB is 240x320px at 16bpp
 
@@ -247,8 +247,8 @@ int filter(int input) {
   xv[4] = input / GAIN;
   yv[0] = yv[1]; yv[1] = yv[2]; yv[2] = yv[3]; yv[3] = yv[4]; 
   yv[4] =   (xv[0] + xv[4]) + 4 * (xv[1] + xv[3]) + 6 * xv[2]
-    + ( -0.5174781998 * yv[0]) + (  2.4093428566 * yv[1])
-    + ( -4.2388639509 * yv[2]) + (  3.3440678377 * yv[3]);
+    + ( -0.0181370770 * yv[0]) + (  0.0329072181 * yv[1])
+    + ( -0.4937426526 * yv[2]) + (  0.1562105841 * yv[3]);
   return (int) yv[4];
 }
 
