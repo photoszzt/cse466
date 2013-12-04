@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <termios.h>
 
 #include "io_handler.h"
 
@@ -28,11 +29,18 @@ void setup() {
     printf("owner error\n");
     exit(1);
   }
-  // Map the IO interrupt from STDIN to our ginal handler
+  // Map the IO interrupt from STDIN to our signal handler
   struct sigaction saio;
   memset(&saio, 0x0, sizeof(struct sigaction));
   saio.sa_handler = io_sig;
   sigaction(SIGIO, &saio, NULL);
+
+  // Disable keys being echoed to the screen
+  struct termios old_term, new_term;
+  tcgetattr(STDIN_FILENO, &old_term);
+  new_term = old_term;
+  new_term.c_lflag &= ~(ICANON | ECHO); 
+  tcsetattr( STDIN_FILENO, TCSANOW, &new_term);
 }
 
 // The I/O handler

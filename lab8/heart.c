@@ -7,6 +7,8 @@
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+
+#include "io_handler.h"
 #include "filter.h"
 
 // Note FB is 240x320px at 16bpp
@@ -19,8 +21,8 @@ void write_line(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *, int,
 
 int main(int argc, char** argv) {
   
-  // remap stdin, stdout, stderr
-
+  // remap stdin
+  setup();
   
   // open the adc
   int fd = open("/dev/adc", 0);
@@ -66,7 +68,6 @@ int main(int argc, char** argv) {
   }
   // stabilize
   // stabilize(fd);
-  printf("stabilized");
 
   // signal stabilized, can execute
   monitor_heart_rate(vinfo, finfo, fbp, fd);
@@ -137,8 +138,11 @@ void monitor_heart_rate(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo
   int i = 0;
   int j = 0;
   write_grid(vinfo, finfo, fbp);
+  while(!proceed()) {
+    usleep(4000);
+  }
   int values[7500];
-  for(j = 0;j < 7500; j++) {
+  while(j < 7500 && proceed()) {
     // Get the adc value
     int value = get_value(fd);
     filter_put(&f, value);
@@ -155,6 +159,7 @@ void monitor_heart_rate(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo
       i++;
       prev = value;
     }
+    j++;
     usleep(4000);
   }
 
