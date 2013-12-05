@@ -67,13 +67,16 @@ void monitor_heart_rate(int fd) {
   while(j < 7500 && get_state() == RUNNING) {
     // Get the adc value
     int value = get_value(fd);
+    printf("pass 1####");
     filter_put(&f, value);
+    printf("pass 2####");
     value = filter_get(&f);
+    printf("pass 3####");
     values[j] = value;
     // write out samples every 0.008 sec (every 2 cycles)
     if(j % 4 == 3) {
       value = (value + values[j - 1] + values[j - 2] + values[j - 3]) / 4;
-      i = write_line(value, prev, i);
+      //i = write_line(value, prev, i);
       prev = value;
     }
     j++;
