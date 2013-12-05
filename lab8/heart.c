@@ -10,157 +10,74 @@
 
 #include "io_handler.h"
 #include "filter.h"
+#include "frame_buf.h"
 
 // Note FB is 240x320px at 16bpp
 
-void stabilize(int); 
-void monitor_heart_rate(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *, int);
+void stabilize(); 
+void monitor_heart_rate(int);
 int get_value(int);
-void write_grid(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *);
-void write_line(struct fb_var_screeninfo, struct fb_fix_screeninfo, char *, int, int, int);
 
 int main(int argc, char** argv) {
-  
+
   // remap stdin
   setup();
-  
+
   // open the adc
   int fd = open("/dev/adc", 0);
   if (fd < 0) {
-    perror("fail to open ADC device:");
+    perror("failed to open ADC device:");
     return 1;
   }
+  // initialize the frame buffer
+  init_fb();
+  write_grid();
+  while(get_state() != STOPPED) {
+    // wait for the user to start
+    while(get_state() == PAUSED) {
+      usleep(4000);
+    }
+    // stabilize
+    write_grid();
+    stabilize();
 
-  // open the frame buffer
-  int fbfd = 0;                    // fb0 file descriptor
-  struct fb_var_screeninfo vinfo;  // variable screen info
-  struct fb_fix_screeninfo finfo;  // fixed screen info
-  long int screensize = 0;
-  char *fbp = 0;                   // mmap file pointer
+    // signal stabilized, can execute
+    monitor_heart_rate(fd);
 
-  // Open the file for reading and writing
-  fbfd = open("/dev/fb0", O_RDWR);
-  if (fbfd == -1) {
-    perror("Error: cannot open framebuffer device");
-    exit(1);
+    enable_terminal();
   }
-
-  // Get fixed screen information
-  if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo) == -1) {
-    perror("Error reading fixed information");
-    exit(2);
-  }
-
-  // Get variable screen information
-  if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
-    perror("Error reading variable information");
-    exit(3);
-  }
-
-  // Figure out the size of the screen in bytes
-  screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
-
-  // Map the device to memory
-  fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
-  if ((int)fbp == -1) {
-    perror("Error: failed to map framebuffer device to memory");
-    exit(4);
-  }
-  // stabilize
-  // stabilize(fd);
-
-  // signal stabilized, can execute
-  monitor_heart_rate(vinfo, finfo, fbp, fd);
-
   // cleanup
   close(fd);
-  munmap(fbp, screensize);
-  close(fbfd);
+  cleanup_fb();
   return 0;
 }
 
-void stabilize(int fd) {
-  int period = -1;
-  int num_correct = 0;
-  int max = 700;
-  int min = 350;
-  int time = 0;
-  int prev = 0;
-  int thresh = 500;
-  int avg = 0;
-  while(1) {
-    usleep(4000);
-    if (time < 50) {
-      time++;
-      continue;
-    }
-    int value = get_value(fd);
-    if (value > max || value < min) {
-      num_correct = 0;
-      period = -1;
-      prev = value;
-      continue;
-    }
-    if (value > prev && value > thresh && prev < thresh) {
-      if (period == -1) {
-        period = time;
-        prev = value;
-        continue; 
-      }  
-      if (period + 10 >= time && time >= period - 10) {
-        num_correct++;
-        time = 0;
-      }
-      if (num_correct >= 3) {
-        break;
-      }
-    } else {
-      if(avg == 0) {
-        avg = value;
-      } else {
-        avg = (avg + value)/2;
-        printf("Avg = %d\n", avg);
-      }
-    }
-    prev = value;
-    time++;
-  }
-
-
+void stabilize() {
+  sleep(5);
 }
 
-void monitor_heart_rate(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, 
-                        char *fbp, int fd) {
+void monitor_heart_rate(int fd) {
   filter_t f;
   memset(&f, 0x0, sizeof(filter_t));
   filter_init(&f);
-  int prev = vinfo.xres/2;
+  int prev = 0;
   int i = 0;
   int j = 0;
-  write_grid(vinfo, finfo, fbp);
-  while(!proceed()) {
-    usleep(4000);
-  }
   int values[7500];
-  while(j < 7500 && proceed()) {
+  while(j < 7500 && get_state() == RUNNING) {
     // Get the adc value
     int value = get_value(fd);
     filter_put(&f, value);
     value = filter_get(&f);
     values[j] = value;
     // write out samples every 0.008 sec (every 2 cycles)
-    if(j % 2 == 1) {
-      value = (value + values[j - 1]) / 2; // get avg of this and previous
-      write_line(vinfo, finfo, fbp, value, prev, i);
-      // update our line position
-      if(i == vinfo.yres - 1) {
-        i = -1;
-      }
-      i++;
+    if(j % 4 == 3) {
+      value = (value + values[j - 1] + values[j - 2] + values[j - 3]) / 4;
+      i = write_line(value, prev, i);
       prev = value;
     }
     j++;
-    usleep(4000);
+    usleep(2000);
   }
 
 }
@@ -182,62 +99,4 @@ int get_value(int fd) {
   }
   return value;
 }
-
-void write_grid(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, char *fbp) {
-  int x, y;
-  // Figure out where in memory to put the pixel
-  for (y = 0; y < vinfo.yres; y++) {
-    for (x = 0; x < vinfo.xres; x++) {
-
-      long int location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
-        (y+vinfo.yoffset) * finfo.line_length;
-      int b = 31;
-      int g = 31;
-      int r = 31;
-      if(x % 4 == 0 || y % 4 == 0 || x % 20 == 19 || x % 20 == 1 || y % 20 == 19 || y % 20 == 1) {
-        b = 15;
-        g = 15;
-        r = 15;
-      }
-      unsigned short int t = r<<11 | g << 5 | b;
-      *((unsigned short int*)(fbp + location)) = t;
-
-    }
-  }
-}
-
-/*
- * Writes a line to the screen with the given element as the current reading on the
- * heartrate monitor.
- */
-void write_line(struct fb_var_screeninfo vinfo, struct fb_fix_screeninfo finfo, 
-    char *fbp, int element, int prev, int y) {
-  // convert element to a position on the x-axis
-  int pos = (int)((double)element * (vinfo.xres / 1024.0));
-  int prev_pos = (int)((double)prev * (vinfo.xres / 1024.0));
-  // write out the point to the screen
-  int x = 0;
-  for (x = 0; x < vinfo.xres; x++) {
-    long int location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) + 
-      (y+vinfo.yoffset) * finfo.line_length;
-    int b = 31;
-    int g = 31;
-    int r = 31;
-    if(x % 4 == 0 || y % 4 == 0 || x % 20 == 19 || x % 20 == 1 || y % 20 == 19 || y % 20 == 1) {
-      // grid piece
-      b = 15;
-      g = 15;
-      r = 15;
-    } 
-    if ((x >= pos - 0 && x <= prev_pos + 0) || (x >= prev_pos - 0 && x <= pos + 0)) {
-      // element
-      b = 0;
-      g = 0;
-      r = 0;
-    }
-    unsigned short int t = r<<11 | g << 5 | b;
-    *((unsigned short int*)(fbp + location)) = t;
-  }
-}
-
 
