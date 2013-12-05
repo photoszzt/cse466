@@ -26,15 +26,15 @@ int main(int argc, char** argv) {
   // open the adc
   int fd = open("/dev/adc", 0);
   if (fd < 0) {
-    perror("fail to open ADC device:");
+    perror("failed to open ADC device:");
     return 1;
   }
   // initialize the frame buffer
   init_fb();
   write_grid();
-  while(1) {
+  while(get_state() != STOPPED) {
     // wait for the user to start
-    while(!proceed()) {
+    while(get_state() == PAUSED) {
       usleep(4000);
     }
     // stabilize
@@ -64,7 +64,7 @@ void monitor_heart_rate(int fd) {
   int i = 0;
   int j = 0;
   int values[7500];
-  while(j < 7500 && proceed()) {
+  while(j < 7500 && get_state() == RUNNING) {
     // Get the adc value
     int value = get_value(fd);
     filter_put(&f, value);
@@ -72,7 +72,7 @@ void monitor_heart_rate(int fd) {
     values[j] = value;
     // write out samples every 0.008 sec (every 2 cycles)
     if(j % 4 == 3) {
-      value = (value + values[j - 1] + values[j - 2] + values[j - 3]) / 4; // get avg of this and previous
+      value = (value + values[j - 1] + values[j - 2] + values[j - 3]) / 4;
       i = write_line(value, prev, i);
       prev = value;
     }
