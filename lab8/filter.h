@@ -1,3 +1,7 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
+// Lab 8 part 2
+
 #ifndef FILTER_H_
 #define FILTER_H_
 
@@ -22,7 +26,7 @@ fixed point precision: 16 bits
 
 */
 
-#define FILTER_TAP_NUM 103
+#define FILTER_TAP_NUM 53
 
 typedef struct {
   int history[FILTER_TAP_NUM];

@@ -1,3 +1,7 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
+// Lab 8 part 2
+
 #ifndef _IO_HANDLER_H_
 #define _IO_HANDLER_H_
 

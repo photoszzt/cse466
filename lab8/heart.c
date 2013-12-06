@@ -1,3 +1,7 @@
+// Joseph Godlewski and Zhiting Zhu
+// joe3701 and zzt0215
+// Lab 8 part 1 - 4
+
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
@@ -11,6 +15,7 @@
 #include "io_handler.h"
 #include "filter.h"
 #include "frame_buf.h"
+#include "heart_rate.h"
 
 // Note FB is 240x320px at 16bpp
 
@@ -44,9 +49,9 @@ int main(int argc, char** argv) {
     // signal stabilized, can execute
     monitor_heart_rate(fd);
 
-    enable_terminal();
   }
   // cleanup
+  enable_terminal();
   close(fd);
   cleanup_fb();
   return 0;
@@ -60,6 +65,8 @@ void monitor_heart_rate(int fd) {
   filter_t f;
   memset(&f, 0x0, sizeof(filter_t));
   filter_init(&f);
+  struct heart_rate hr;
+  initialize_hr(&hr);
   int prev = 0;
   int i = 0;
   int j = 0;
@@ -71,13 +78,17 @@ void monitor_heart_rate(int fd) {
     value = filter_get(&f);
     values[j] = value;
     // write out samples every 0.008 sec (every 2 cycles)
-    if(j % 4 == 3) {
-      value = (value + values[j - 1] + values[j - 2] + values[j - 3]) / 4;
+    if(j % 2 == 1) {
+      value = (value + values[j - 1]) / 2;
       i = write_line(value, prev, i);
       prev = value;
+      update_heart_rate(&hr, value, j);
+      int heart_rate = get_heart_rate(&hr);
+      clear_hr();
+      write_heart_rate(heart_rate);
     }
     j++;
-    usleep(2000);
+    usleep(4000);
   }
 
 }
